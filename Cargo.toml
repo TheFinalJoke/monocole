@@ -6,3 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4"
+
+[[bin]]
+name = "agent"
+path = "src/agent/main.rs"
+
+[[bin]]
+name = "controller"
+path = "src/controller/main.rs"
+
+[lib]
+name = "lib"
+path = "src/lib/lib.rs"
