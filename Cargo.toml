@@ -6,7 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-log = "0.4"
+log = "0.4.17"
+tokio = {version = "1.22.0", features = ["full"]}
+cdrs-tokio = {version = "7.0.2"}
+env_logger ={ version = "0.10.0"}
 
 [[bin]]
 name = "agent"

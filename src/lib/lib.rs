@@ -1,4 +1,5 @@
-use log::{info};
-pub fn print_hello() {
-    info!("Hello From lib");
-}
+#[macro_use]
+extern crate log;
+pub mod cassandra;
+pub mod logging;
+
