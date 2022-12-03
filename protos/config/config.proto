@@ -1,0 +1,24 @@
+syntax = "proto3";
+package config;
+
+
+message HostIp {
+    repeated string host_ip = 1;
+}
+message ControllerConfigRules {
+    int64 heartbeat_freq = 1; // The Frequency of checking agents in secs
+    int64 poll_agent_freq =2; // The Frequency of polling agents in secs
+    optional HostIp ignore_host = 3; // Disable logging for a host
+    int64 controller_port = 4; // Port for the Api
+    int64 db_port = 5; // Database Port 
+    bool authentication = 6; // If you want authentication or not
+}
+
+message AgentConfigRules {
+    int64 query_system_freq = 1; // The Freq of Poll and Caching 
+    bool no_cache = 2; // Don't cache, when asked pull live update
+    bool auto_discovery = 3; // Try and check for discovery for Controllers
+    string controller_ip = 4; // Controller IP address or Hostnaem 
+    string token = 5; // Token to connect with controller
+    int64 port = 6 ; // Port to connect with the controller
+}

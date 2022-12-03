@@ -1,0 +1,5 @@
+agent:
+  system_freq: 300
+  auto_discovery: false
+  controller_ip: 192.168.200.220
+  token: fdjak

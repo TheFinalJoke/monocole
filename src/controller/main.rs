@@ -1,14 +1,22 @@
 //use lib::cassandra;
-#[macro_use]
 extern crate log;
 use lib::logging::MyLogger;
-use lib::cassandra;
-
+use clap::{Arg, Command};
 #[tokio::main]
 async fn main() {
     // Create Logger
     MyLogger::init().unwrap();
-    info!("hello from contoller");
-    cassandra::run().await;
-    trace!("After Cassandra");
+    let app = Command::new("monocole")
+        .arg(Arg::new("path")
+            .short('p')
+            .long("path")
+            .help("Path to configuration")
+            .default_value("/etc/monocole/monocole.yaml"));
+    
+    let matches = app.get_matches();
+    let path = matches.get_one::<String>("path");
+    let configure = lib::get_controller_configuration(
+        path.expect("Invalid path").to_owned()
+    );
+    dbg!(configure);
 }
