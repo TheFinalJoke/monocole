@@ -2,6 +2,7 @@
 extern crate log;
 use lib::logging::MyLogger;
 use clap::{Arg, Command};
+use lib::retrieval;
 #[tokio::main]
 async fn main() {
     // Create Logger
@@ -16,7 +17,9 @@ async fn main() {
     let matches = app.get_matches();
     let path = matches.get_one::<String>("path");
     let configure = lib::get_agent_configuration(
-        path.expect("Invalid path").to_owned()
+        retrieval::config_lib::FileRetrieve {
+            path: path.expect("Invalid path").to_owned()
+        }
     );
     dbg!(configure);
 }

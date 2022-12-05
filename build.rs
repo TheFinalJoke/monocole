@@ -6,7 +6,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_server(true)
         .protoc_arg("--experimental_allow_proto3_optional")
         .compile(
-            &["protos/config/config.proto"],
+            &[
+                "protos/config/config.proto", 
+                "protos/controller/control.proto"
+            ],
             &["protos"]
         )?;
     Ok(())

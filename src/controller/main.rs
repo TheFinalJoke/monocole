@@ -1,7 +1,9 @@
 //use lib::cassandra;
 extern crate log;
 use lib::logging::MyLogger;
+use lib::retrieval;
 use clap::{Arg, Command};
+
 #[tokio::main]
 async fn main() {
     // Create Logger
@@ -16,7 +18,9 @@ async fn main() {
     let matches = app.get_matches();
     let path = matches.get_one::<String>("path");
     let configure = lib::get_controller_configuration(
-        path.expect("Invalid path").to_owned()
+        retrieval::config_lib::FileRetrieve {
+            path: path.expect("Invalid path").to_owned()
+        }
     );
     dbg!(configure);
 }
