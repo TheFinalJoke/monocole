@@ -8,7 +8,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .compile(
             &[
                 "protos/config/config.proto", 
-                "protos/controller/control.proto"
+                "protos/controller/control.proto",
+                "protos/cpuinfo/cpuinfo.proto",
+                "protos/os/linux.proto",
             ],
             &["protos"]
         )?;

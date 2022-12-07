@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package penguin;
+
+message Linux {
+    string arch = 1;
+    string kernel = 2;
+    string distro = 3;
+    string version = 4;
+}
+
+// Different Types of Stats from Linux Kernel 
+// Will have To Implement Each stats for different compontnets
