@@ -4,3 +4,5 @@ controller:
   ignore_host:
     - "192.168.200.200"
     - "192.168.200.110"
+  cassandra:
+    replication: NetworkTopologyStrategy

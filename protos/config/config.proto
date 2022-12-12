@@ -1,7 +1,20 @@
 syntax = "proto3";
 package config;
 
-
+enum ReplicationStrategy {
+    SimpleStrategy = 0;
+    NetworkTopologyStrategy = 1;
+}
+message DcMapping {
+    map<string, int32> mapping = 1;
+}
+message CassandraOptions {
+    ReplicationStrategy replication = 1;
+    optional string passwd = 2;
+    optional string user = 3;
+    optional int64 replication_factor = 4;
+    optional DcMapping datacenters_mapping = 5;
+}
 message HostIp {
     repeated string host_ip = 1;
 }
@@ -10,8 +23,10 @@ message ControllerConfigRules {
     int64 poll_agent_freq =2; // The Frequency of polling agents in secs
     optional HostIp ignore_host = 3; // Disable logging for a host
     int64 controller_port = 4; // Port for the Api
-    int64 db_port = 5; // Database Port 
+    // int64 db_port = 5; // Database Port DEPRECATED
     bool authentication = 6; // If you want authentication or not
+    HostIp db_server = 7; // Server location, can be multiple, Also Specify Port
+    CassandraOptions cassandra_options = 8; // Cassandra Options To connect
 }
 
 message AgentConfigRules {

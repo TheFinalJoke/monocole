@@ -1,99 +1,12 @@
-use crate::config_types::Config;
 extern crate log;
+pub mod cassandra;
 pub mod logging;
 pub mod retrieval;
+pub mod rpc_types;
 use crate::retrieval::retrieval_trait::traits::Retrieval;
 use crate::retrieval::config_lib::FileRetrieve;
+use crate::rpc_types::config_types::{self, Config};
 
-pub mod config_types {
-    #[cfg(test)]
-    use mockall::automock;
-    
-    #[cfg_attr(test, automock)]
-    pub trait Config {
-        fn parse(conf: config::Map<String, config::Value>) -> Self;
-    }
-    tonic::include_proto!("config");
-
-    impl Config for ControllerConfigRules { 
-        fn parse(conf: config::Map<String, config::Value>) -> Self {
-            let mut configurable_conf = conf;
-            Self {
-                heartbeat_freq: match configurable_conf.remove("heartbeat") {
-                    Some(beat) => beat.into_int().unwrap(),
-                    None => 300,
-                },
-                poll_agent_freq: match configurable_conf.remove("poll") {
-                    Some(polled) => polled.into_int().unwrap(),
-                    None => 600,
-                },
-                ignore_host: {
-                    let mut hosts = Vec::new();
-                        match configurable_conf.remove("ignore_host") {
-                            Some(parsed_hosts) => {
-                                for host in parsed_hosts.into_array().unwrap() {
-                                    hosts.push(host.into_string().unwrap())
-                                }
-                            },
-                            None => {log::info!("There is no hosts to process")},
-                        }
-                        Some(
-                        HostIp{
-                            host_ip: hosts
-                        })
-                },
-                controller_port: match configurable_conf.remove("controller_port") {
-                    Some(port) => port.into_int().unwrap(),
-                    None => 19200,
-                },
-                db_port: match configurable_conf.remove("db_port") {
-                    Some(port) => port.into_int().unwrap(),
-                    None => 9042,
-                },
-                authentication: match configurable_conf.remove("authentication") {
-                    Some(auth) => auth.into_bool().unwrap(),
-                    None => true,
-                },
-            }
-        }
-    }
-    impl Config for AgentConfigRules {
-
-        fn parse(conf: config::Map<String, config::Value>) -> Self {
-            let mut configurable_conf = conf;
-            Self {
-                query_system_freq: match configurable_conf.remove("system_freq") {
-                    Some(freq) => freq.into_int().unwrap(),
-                    None => 300,
-                },
-                no_cache: match configurable_conf.remove("no_cache") {
-                    Some(cache) => cache.into_bool().unwrap(),
-                    None => false
-                },
-                auto_discovery: match configurable_conf.remove("auto_discovery") {
-                    Some(disc) => disc.into_bool().unwrap(),
-                    None => false
-                },
-                controller_ip: match configurable_conf.remove("controller_ip") {
-                    Some(ip) => ip.into_string().unwrap(),
-                    None => panic!("Controller IP is not set, Please read documentation")
-                },
-                token: match configurable_conf.remove("token") {
-                    Some(token) => token.into_string().unwrap(),
-                    None => "".to_string()
-                },
-                port: match configurable_conf.remove("port") {
-                    Some(port) => port.into_int().unwrap(),
-                    None => 19200
-                }, 
-            }
-        }
-    }
-}
-
-pub mod control_types {
-    tonic::include_proto!("controller");
-}
 pub fn get_controller_configuration(path: FileRetrieve) -> config_types::ControllerConfigRules{
     log::info!("Pulling Config From {}", &path.path);
     let configuration = path.retreieve::<FileRetrieve>().unwrap().get_table("controller").unwrap_or_else(|_| {
