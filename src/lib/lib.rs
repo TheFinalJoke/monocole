@@ -3,11 +3,11 @@ pub mod cassandra;
 pub mod logging;
 pub mod retrieval;
 pub mod rpc_types;
-use crate::retrieval::retrieval_trait::traits::Retrieval;
 use crate::retrieval::config_lib::FileRetrieve;
+use crate::retrieval::retrieval_trait::traits::Retrieval;
 use crate::rpc_types::config_types::{self, Config};
 
-pub fn get_controller_configuration(path: FileRetrieve) -> config_types::ControllerConfigRules{
+pub fn get_controller_configuration(path: FileRetrieve) -> config_types::ControllerConfigRules {
     log::info!("Pulling Config From {}", &path.path);
     let configuration = path.retreieve::<FileRetrieve>().unwrap().get_table("controller").unwrap_or_else(|_| {
         panic!("Configuration File does not contain controller. See Documentation for Configuration")
@@ -15,12 +15,15 @@ pub fn get_controller_configuration(path: FileRetrieve) -> config_types::Control
     config_types::ControllerConfigRules::parse(configuration)
 }
 
-
-pub fn get_agent_configuration(path: FileRetrieve) -> config_types::AgentConfigRules{
+pub fn get_agent_configuration(path: FileRetrieve) -> config_types::AgentConfigRules {
     log::info!("Pulling Config From {}", &path.path);
-    let configuration = path.retreieve::<FileRetrieve>().unwrap().get_table("agent").unwrap_or_else(|_| {
-        panic!("Configuration File does not contain Agent. See Documentation for Configuration")
-    });
+    let configuration = path
+        .retreieve::<FileRetrieve>()
+        .unwrap()
+        .get_table("agent")
+        .unwrap_or_else(|_| {
+            panic!("Configuration File does not contain Agent. See Documentation for Configuration")
+        });
     config_types::AgentConfigRules::parse(configuration)
 }
 
@@ -37,7 +40,7 @@ pub fn get_agent_configuration(path: FileRetrieve) -> config_types::AgentConfigR
 //         AGENT=0,
 //         CONTROLLER=1,
 //     }
-//     
+//
 //     fn gen_config(config_type: ConfigType) -> config_crate::Config {
 //         let builder = config_crate::Config::builder();
 //         match config_type {

@@ -7,12 +7,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .protoc_arg("--experimental_allow_proto3_optional")
         .compile(
             &[
-                "protos/config/config.proto", 
+                "protos/config/config.proto",
                 "protos/controller/control.proto",
                 "protos/cpuinfo/cpuinfo.proto",
                 "protos/os/linux.proto",
             ],
-            &["protos"]
+            &["protos"],
         )?;
     Ok(())
 }
