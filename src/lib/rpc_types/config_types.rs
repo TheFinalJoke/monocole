@@ -57,7 +57,7 @@ impl Config for ControllerConfigRules {
             },
             cassandra_options: if let Some(cass) = configurable_conf.remove("cassandra") {
                 let tab = cass.into_table().expect("Configuration File does not contain cassandra. See Documentation for Configuration");
-                dbg!(&tab);
+                log::debug!("{:?}", &tab);
                 Some(CassandraOptions::parse(tab))
             } else {
                 log::info!("Failed");
@@ -91,7 +91,7 @@ impl Config for AgentConfigRules {
                 .expect("ControllerIP is not set, Please read Documentation"),
             token: configurable_conf
                 .remove("token")
-                .map(|token| token.into_string().unwrap_or(String::from("")))
+                .map(|token| token.into_string().unwrap_or_else(|_| String::from("")))
                 .unwrap(),
             port: configurable_conf
                 .remove("port")
