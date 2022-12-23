@@ -10,6 +10,11 @@ use scylla::transport::errors::NewSessionError;
 use scylla::{Session, SessionBuilder};
 use std::time::Duration;
 use thiserror::Error;
+use std::rc::Rc;
+
+pub trait DataType<T: 'static, E: 'static> {
+    fn create_datatype<I: 'static>(self) -> Result<T, E>;
+}
 pub enum QueryStatus {
     COMPLETED=0,
     ADDED=1,
@@ -26,27 +31,36 @@ pub enum QueryError {
     #[error("Could not establish connection")]
     ConnectionInvalid,
 }
-struct CQLQuery {
-    keyspace: String,
-    query: String,
+#[derive(Debug, Clone)]
+pub struct CQLQuery {
+    pub keyspace: String,
+    pub cassandra_options: config_types::CassandraOptions,
+    pub db_server: Rc<Option<config_types::HostIp>>,
 }
 impl CQLQuery {
-    async fn connect(&self, hosts: &config_types::HostIp) -> Result<Session, NewSessionError> {
+    pub async fn connect(&self) -> Result<Session, NewSessionError> {
         let session = SessionBuilder::new()
-            .known_nodes(&hosts.host_ip)
+            .known_nodes(self.db_server.as_deref())
             .connection_timeout(Duration::from_secs(5))
             .build()
             .await?;
         Ok(session)
     }
 
-    async fn build_keyspace(&self, config: config_types::ControllerConfigRules) -> Result<(), NewSessionError> {
-        let hosts = config.db_server.unwrap_or_default();
-        let session = self.connect(&hosts)
+    pub async fn build_keyspace(&self) -> Result<(), NewSessionError> {
+        let session = self.connect()
             .await?;
         session.query(
-            ("CREATE KEYSPACE IF NOT EXISTS monocole WITH replication {'class': {}, 'replication_factor' {}", &config.cassandra_options.), 
-            &[])?;
+            format!("CREATE KEYSPACE IF NOT EXISTS {} WITH REPLICATION = {{'class': '{}', 'replication_factor': '{}'}}", 
+            self.keyspace.as_str(),
+            self.cassandra_options.replication().as_str_name(), self.cassandra_options.replication_factor.unwrap_or(1)),
+            &[]).await?;
         Ok(())
+    }
+
+    pub async fn develop_datatype<T,E>(&self, datatype: T) -> Result<(), E> {
+        println!("Any datatype that impl the datatype struct");
+        Ok(())
+
     }
 }

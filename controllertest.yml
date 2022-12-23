@@ -1,8 +1,7 @@
 controller:
   heartbeat: 300
   poll: 600
-  ignore_host:
-    - "192.168.200.200"
-    - "192.168.200.110"
+  db_server: 
+  - 172.17.0.3:9042
   cassandra:
     replication: NetworkTopologyStrategy

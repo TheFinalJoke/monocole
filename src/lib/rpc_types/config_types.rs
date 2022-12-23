@@ -133,7 +133,12 @@ impl Config for CassandraOptions {
         }
     }
 }
-
+// Build a new impl to make it easier to get replications
+impl CassandraOptions {
+    pub fn get_replication(&self) -> ReplicationStrategy {
+        ReplicationStrategy::from_i32(self.replication).expect("Invalid Replication Strategy")
+    }
+}
 impl ReplicationStrategy {
     pub fn into_int(&self) -> i32 {
         *self as i32
