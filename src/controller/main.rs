@@ -4,7 +4,9 @@ use clap::{Arg, Command};
 use lib::logging::MyLogger;
 use lib::retrieval;
 use lib::cassandra;
+use scylla::IntoTypedRows;
 use std::rc::Rc;
+
 
 static KEYSPACE: &str = "monocole";
 
@@ -20,18 +22,30 @@ async fn main() {
             .default_value("/etc/monocole/monocole.yaml"),
     );
 
+
     let matches = app.get_matches();
     let path = matches.get_one::<String>("path");
     let configure = lib::get_controller_configuration(retrieval::config_lib::FileRetrieve {
         path: path.expect("Invalid path").to_owned(),
     });
-    dbg!(&configure);
-    let query = cassandra::CQLQuery{
+    let referenced_config = Rc::new(configure);
+    let session = lib::cassandra::connect(Rc::clone(&referenced_config));
+    let query = cassandra::Cql{
         keyspace: KEYSPACE.to_string(),
-        cassandra_options: configure.cassandra_options.unwrap(),
-        db_server: configure.db_server
+        config_rules: Rc::clone(&referenced_config),
+        session: session.await.expect("Failed to Connect"),
     };
-    dbg!(configure.db_server);
-    query.build_keyspace().await;
+    //query.keyspaces().await.into_iter().for_each(|row| {
+    //    println!(r#"{:?}"#, row[0].columns);
+    //})
 
+    if let Some(rows) = query.keyspaces().await {
+        // Parse each row as a tuple containing single i32
+        rows.into_typed::<(String,String, String)>().into_iter().for_each(|row| {
+            if row.unwrap().0 == "monocole" {
+            
+            }
+        });
+    }
+    
 }

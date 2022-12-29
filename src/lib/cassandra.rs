@@ -5,15 +5,16 @@
 // Network Topologies -> Allow Different Datacenters
 // load_balancing
 // Default Timeout
-use crate::rpc_types::config_types;
+use crate::rpc_types::{config_types, hardware_types};
+use scylla::frame::response::result::Row;
 use scylla::transport::errors::NewSessionError;
 use scylla::{Session, SessionBuilder};
 use std::time::Duration;
 use thiserror::Error;
 use std::rc::Rc;
 
-pub trait DataType<T: 'static, E: 'static> {
-    fn create_datatype<I: 'static>(self) -> Result<T, E>;
+pub trait DataType {
+    fn create_datatype(self) -> Box<Self>;
 }
 pub enum QueryStatus {
     COMPLETED=0,
@@ -21,7 +22,14 @@ pub enum QueryStatus {
     FAILED=2,
     SUCCESS=3,
 }
-
+pub async fn connect(config_rules: Rc<config_types::ControllerConfigRules>,) -> Result<Session, NewSessionError> {
+    let session = SessionBuilder::new()
+        .known_nodes(&config_rules.db_server.as_ref().unwrap().host_ip)
+        .connection_timeout(Duration::from_secs(5))
+        .build()
+        .await?;
+    Ok(session)
+}
 #[derive(Error, Debug)]
 pub enum QueryError {
     #[error("Connection was Interrupt")]
@@ -31,36 +39,31 @@ pub enum QueryError {
     #[error("Could not establish connection")]
     ConnectionInvalid,
 }
-#[derive(Debug, Clone)]
-pub struct CQLQuery {
+#[derive(Debug)]
+pub struct Cql {
     pub keyspace: String,
-    pub cassandra_options: config_types::CassandraOptions,
-    pub db_server: Rc<Option<config_types::HostIp>>,
+    pub config_rules: Rc<config_types::ControllerConfigRules>,
+    pub session: Session
 }
-impl CQLQuery {
-    pub async fn connect(&self) -> Result<Session, NewSessionError> {
-        let session = SessionBuilder::new()
-            .known_nodes(self.db_server.as_deref())
-            .connection_timeout(Duration::from_secs(5))
-            .build()
-            .await?;
-        Ok(session)
-    }
+impl Cql {
+    pub async fn keyspaces(&self) -> Option<Vec<Row>>{
+        match self.session.query("DESC KEYSPACES;", &[]).await {
+            Ok(res) => res.rows,
+            Err(_) => None
+        }
 
+    } 
     pub async fn build_keyspace(&self) -> Result<(), NewSessionError> {
-        let session = self.connect()
-            .await?;
-        session.query(
+        let options = self.config_rules.as_ref().cassandra_options.as_ref();
+        self.session.query(
             format!("CREATE KEYSPACE IF NOT EXISTS {} WITH REPLICATION = {{'class': '{}', 'replication_factor': '{}'}}", 
             self.keyspace.as_str(),
-            self.cassandra_options.replication().as_str_name(), self.cassandra_options.replication_factor.unwrap_or(1)),
+            options.unwrap().replication().as_str_name(), options.unwrap().replication_factor.unwrap_or(1)),
             &[]).await?;
         Ok(())
     }
 
-    pub async fn develop_datatype<T,E>(&self, datatype: T) -> Result<(), E> {
-        println!("Any datatype that impl the datatype struct");
+pub async fn develop_datatype<T,E>(&self, datatype: T) -> Result<(), E> {
         Ok(())
-
     }
 }
