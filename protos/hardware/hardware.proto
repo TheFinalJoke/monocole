@@ -20,7 +20,9 @@ message Cpu {
     float max_speed = 6; // In MHz
     float min_speed = 7; // in MHz
     bool boost_clock = 8; // if Boost clock or turbo is enabled
-    optional float clock = 9;
+}
+message Cpus {
+    repeated Cpu cpu_list = 1;
 }
 enum MEMORY_TYPE {
     DDR = 0;
@@ -45,21 +47,44 @@ message Dimm {
 enum DiskType {
     SSD = 0;
     HARD_DISK = 1;
+    NVME = 2;
 }
 // Disk Info
 message Disks {
-    repeated HardDrive drives = 1;
+    repeated Drive drives = 1;
 }
- message HardDrive {
+message Drive {
     string vendor = 1;
     string model = 2;
-    DiskType type = 3;
+    DiskType type = 3; // Type of Disk
     int64 size = 4; // in MB
     optional int64 spin_speed = 5;
     optional int64 transfer_speed = 6;
- }
+    string pci_address = 7;
+    string logical_location = 8;
+}
+enum Duplex {
+    HALF = 0;
+    FULL = 1;
+}
+enum IpType {
+    IPV4 = 0;
+    IPV6 = 1;
+}
 // Nic Info
-
+message NetworkInterfaceCard {
+    string vendor = 1;
+    string model = 2;
+    string interface_name = 3;
+    string mac_address = 4;
+    bool autonegotiation = 5;
+    string driver = 6;
+    string speed = 7;
+    Duplex duplex = 8;
+    string ip_addr = 9;
+    IpType iptype = 10;
+    string physical = 11;
+}
 // Assessories, GPU info, PCI Devices 
 
 

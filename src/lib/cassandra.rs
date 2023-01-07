@@ -12,10 +12,8 @@ use scylla::{Session, SessionBuilder};
 use std::time::Duration;
 use thiserror::Error;
 use std::rc::Rc;
+use scylla::batch::Batch;
 
-pub trait DataType {
-    fn create_datatype(self) -> Box<Self>;
-}
 pub enum QueryStatus {
     COMPLETED=0,
     ADDED=1,
@@ -62,8 +60,19 @@ impl Cql {
             &[]).await?;
         Ok(())
     }
-
-pub async fn develop_datatype<T,E>(&self, datatype: T) -> Result<(), E> {
+    pub async fn drop_keyspace(&self) -> Result<(), NewSessionError> {
+        self.session.query(
+            format!("DROP KEYSPACE IF EXISTS {}", self.keyspace.as_str()), &[]).await?;
         Ok(())
     }
+    pub async fn develop_datatypes(&self) -> Result<(), NewSessionError> {
+        let mut batch: Batch = Default::default();
+        let mut batch_values:Vec<()> = vec![];
+        hardware_types::generate_datatypes().into_iter().for_each(|datat| {
+            batch.append_statement(datat);
+            batch_values.push(());
+        });
+        self.session.batch(&batch, &batch_values).await?;
+        Ok(())
+        }
 }
