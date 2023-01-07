@@ -7,8 +7,8 @@ package hardware;
 message Motherboard {
     string vendor = 1;
     string model = 2;
-    string socket = 3;
-    
+    string socket_type = 3;
+    optional string bios = 4;
 }
 // CPU Info
 message Cpu {
@@ -33,7 +33,7 @@ enum MEMORY_TYPE {
 
 }
 message Dimms {
-    repeated Dimm dimm = 1;
+    repeated Dimm dimms = 1;
 }
 // Memory Info
 message Dimm {
@@ -83,7 +83,7 @@ message NetworkInterfaceCard {
     Duplex duplex = 8;
     string ip_addr = 9;
     IpType iptype = 10;
-    string physical = 11;
+    string physical_location = 11;
 }
 // Assessories, GPU info, PCI Devices 
 
