@@ -35,17 +35,23 @@ async fn main() {
         config_rules: Rc::clone(&referenced_config),
         session: session.await.expect("Failed to Connect"),
     };
-    //query.keyspaces().await.into_iter().for_each(|row| {
-    //    println!(r#"{:?}"#, row[0].columns);
-    //})
-
+    // Check if there is a keyspaces created
+    // Maybe turn this into a function
     if let Some(rows) = query.keyspaces().await {
-        // Parse each row as a tuple containing single i32
-        rows.into_typed::<(String,String, String)>().into_iter().for_each(|row| {
-            if row.unwrap().0 == "monocole" {
-            
+        let mut keyspaces: Vec<bool> = Vec::new();
+        for row in rows.into_typed::<(String, String, String)>() {
+            if row.unwrap().0.as_str() != "monocole" {
+                keyspaces.push(false);
+            } else {
+                keyspaces.push(true);
             }
-        });
+        };
+        if keyspaces.contains(&true) {
+            log::info!("Keyspace monocole is already created");
+        } else {
+            query.build_keyspace().await.expect("Error While Building a keyspace");
+        }
+
     }
     
 }
