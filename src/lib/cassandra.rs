@@ -12,7 +12,6 @@ use scylla::{Session, SessionBuilder};
 use std::time::Duration;
 use thiserror::Error;
 use std::rc::Rc;
-use scylla::batch::Batch;
 
 pub enum QueryStatus {
     COMPLETED=0,
@@ -67,14 +66,10 @@ impl Cql {
     }
     pub async fn develop_datatypes(&self) -> Result<(), NewSessionError> {
         self.session.use_keyspace(self.keyspace.as_str(), false).await?;
+        // TODO Build async or batch query
         for query in hardware_types::generate_datatypes() {
             self.session.query(query, ()).await?;
         }
-        // hardware_types::generate_datatypes()
-        //     .into_iter().
-        //     // .map(|query| async move {
-        //     //     self.session.query(query, ()).await.unwrap();
-        //     // });
         Ok(())
         }
 }
