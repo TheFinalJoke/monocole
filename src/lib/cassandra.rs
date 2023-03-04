@@ -94,7 +94,7 @@ impl Cql {
             nics Nics,
             disks Disks,
             mb Motherboard,
-            PRIMARY_KEY ((host_id, hostname, ip_address))
+            PRIMARY KEY ((host_id, hostname, ip_address))
         )");
         self.create_table(query).await?;
         Ok(())
