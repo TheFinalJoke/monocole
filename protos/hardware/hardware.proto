@@ -85,6 +85,10 @@ message NetworkInterfaceCard {
     IpType iptype = 10;
     string physical_location = 11;
 }
+
+message Nics {
+    repeated NetworkInterfaceCard nics_list = 1;
+}
 // Assessories, GPU info, PCI Devices 
 
 

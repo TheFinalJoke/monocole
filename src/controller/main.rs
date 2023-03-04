@@ -58,6 +58,7 @@ async fn main()  -> Result<(), Box<dyn Error>>{
         } else {
             query.build_keyspace().await?;
             query.develop_datatypes().await?;
+            query.initialize_table().await?;
             // Generate datatypes 
             // Generate Tables
             // if dev Generate rows for development

@@ -2,6 +2,6 @@ controller:
   heartbeat: 300
   poll: 600
   db_server: 
-  - 192.168.200.117:9042
+  - devpi3.deathstar.local:9042
   cassandra:
     replication: NetworkTopologyStrategy

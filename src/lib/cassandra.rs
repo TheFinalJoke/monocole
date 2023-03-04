@@ -72,4 +72,39 @@ impl Cql {
         }
         Ok(())
         }
+    pub async fn create_table(&self, query: String) -> Result<(), NewSessionError> {
+        self.session.use_keyspace(self.keyspace.as_str(), false).await?;
+        self.session.query(query,()).await?;
+    Ok(())
+
+    }
+    pub async fn initialize_table(&self) -> Result<(), NewSessionError> {
+        let query = format!("CREATE TABLE monocole( 
+            host_id UUID,
+            timestamp timeUUID,
+            hostname text,
+            ip_address text,
+            is_active text,
+            is_container boolean,
+            is_baremetal boolean,
+            is_virtual boolean,
+            is_vm boolean,
+            cpu cpus,
+            dimms Dimms,
+            nics Nics,
+            disks Disks,
+            mb Motherboard,
+            PRIMARY_KEY ((host_id, hostname, ip_address))
+        )");
+        self.create_table(query).await?;
+        Ok(())
+    }
+    pub async fn insert_single<T: scylla::frame::value::Value>(&self, table: &'static str, insert: T) -> Result<(), NewSessionError> {
+        self.session.use_keyspace(self.keyspace.as_str(), false).await?;
+        
+        self.session.query(
+            format!("INSERT INTO {} (a) VALUES (?)", table), 
+            (insert,)).await?;
+        Ok(())
+    }
 }
