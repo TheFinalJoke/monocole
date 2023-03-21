@@ -1,8 +1,8 @@
 extern crate log;
-pub mod cassandra;
 pub mod logging;
 pub mod retrieval;
 pub mod rpc_types;
+pub mod storage;
 use crate::retrieval::config_lib::FileRetrieve;
 use crate::retrieval::retrieval_trait::traits::Retrieval;
 use crate::rpc_types::config_types::{self, Config};

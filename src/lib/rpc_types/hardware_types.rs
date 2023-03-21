@@ -1,11 +1,10 @@
-use std::fmt::Debug;
 use crate::rpc_types::cpu_types;
-use crate::rpc_types::motherboard_types;
 use crate::rpc_types::dimm_types;
 use crate::rpc_types::disk_types;
+use crate::rpc_types::motherboard_types;
 use crate::rpc_types::nic_types;
+use std::fmt::Debug;
 tonic::include_proto!("hardware");
-
 pub fn generate_datatypes() -> Vec<&'static str> {
     vec![
         cpu_types::generate_cpu_datatype(),

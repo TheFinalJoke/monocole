@@ -1,5 +1,3 @@
-
-
 pub fn generate_cpu_datatype() -> &'static str {
     r#"CREATE TYPE Cpu (
         vendor text,

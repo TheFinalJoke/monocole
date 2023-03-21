@@ -1,7 +1,6 @@
 controller:
   heartbeat: 300
   poll: 600
-  db_server: 
-  - devpi3.deathstar.local:9042
-  cassandra:
-    replication: NetworkTopologyStrategy
+  storage_options:
+    driver: polodb
+    file: /etc/hello.db

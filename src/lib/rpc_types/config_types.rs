@@ -44,24 +44,12 @@ impl Config for ControllerConfigRules {
                 .remove("authentication")
                 .map(|auth| auth.into_bool().expect("Option is not True/False"))
                 .unwrap_or(true),
-            db_server: {
-                let mut hosts = Vec::new();
-                if let Some(parsed_hosts) = configurable_conf.remove("db_server") {
-                    for host in parsed_hosts.into_array().unwrap() {
-                        hosts.push(host.into_string().unwrap())
-                    }
-                } else {
-                    log::info!("There is no hosts to process")
-                }
-                Some(HostIp { host_ip: hosts })
-            },
-            cassandra_options: if let Some(cass) = configurable_conf.remove("cassandra") {
-                let tab = cass.into_table().expect("Configuration File does not contain cassandra. See Documentation for Configuration");
-                log::debug!("{:?}", &tab);
-                Some(CassandraOptions::parse(tab))
-            } else {
-                log::info!("Failed");
-                None
+            storage_options: {
+                let storage_options = configurable_conf
+                    .remove("storage_options")
+                    .map(|option| option.into_table().expect("expected multiple"));
+                log::debug!("{:?}", &storage_options);
+                Some(StorageOptions::parse(storage_options.unwrap()))
             },
         }
     }
@@ -97,10 +85,42 @@ impl Config for AgentConfigRules {
                 .remove("port")
                 .map(|port| port.into_int().expect("Not a Valid Port Number"))
                 .unwrap_or(19200),
+            //storage_options: None,
         }
     }
 }
-
+impl Config for StorageOptions {
+    fn parse(conf: config::Map<String, config::Value>) -> Self {
+        let mut configuration_conf = conf;
+        log::debug!("Storage Options from Config: {:?}", &configuration_conf);
+        log::info!("Loading Storage Options");
+        let driver = configuration_conf
+            .remove("driver")
+            .map(|d| {
+                d.into_string()
+                    .expect("Driver is not present, and must be a string")
+            })
+            .unwrap_or("polodb".to_owned());
+        let driver_option = match driver.to_lowercase().as_str() {
+            "polodb" => SDriver::PoloDb,
+            "cassandra" => SDriver::Cassandra,
+            "monogodb" => SDriver::MongoDb,
+            _ => SDriver::PoloDb,
+        };
+        Self {
+            configuration_options: match &driver_option {
+                SDriver::Cassandra => Some(
+                    crate::rpc_types::config_types::storage_options::ConfigurationOptions::CassOptions(CassandraOptions::parse(configuration_conf)),
+                ),
+                SDriver::PoloDb => {
+                    Some(crate::rpc_types::config_types::storage_options::ConfigurationOptions::PolodbOptions(PoloDbOptions::parse(configuration_conf)))
+                },
+                SDriver::MongoDb => None,
+            },
+            driver: driver_option.into(),
+        }
+    }
+}
 impl Config for CassandraOptions {
     fn parse(conf: config::Map<String, config::Value>) -> Self {
         let mut configurable_conf = conf;
@@ -130,6 +150,30 @@ impl Config for CassandraOptions {
             datacenters_mapping: configurable_conf.remove("mapping").map(|_| DcMapping {
                 mapping: HashMap::from([(String::from("Dc1"), 5)]),
             }),
+            db_server: {
+                let mut hosts = Vec::new();
+                if let Some(parsed_hosts) = configurable_conf.remove("db_server") {
+                    for host in parsed_hosts.into_array().unwrap() {
+                        hosts.push(host.into_string().unwrap())
+                    }
+                } else {
+                    log::info!("There is no hosts to process")
+                }
+                Some(HostIp { host_ip: hosts })
+            },
+        }
+    }
+}
+
+impl Config for PoloDbOptions {
+    fn parse(conf: config::Map<String, config::Value>) -> Self {
+        let mut configuration = conf;
+
+        Self {
+            file_path: configuration
+                .remove("file")
+                .map(|file_path| file_path.into_string().expect("Did not find file path"))
+                .unwrap_or("/etc/monocole/polodb.db".to_owned()),
         }
     }
 }

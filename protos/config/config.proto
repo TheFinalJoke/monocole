@@ -5,6 +5,11 @@ enum ReplicationStrategy {
     SimpleStrategy = 0;
     NetworkTopologyStrategy = 1;
 }
+enum SDriver {
+    PoloDb = 0;
+    Cassandra = 1;
+    MongoDb = 2;
+}
 message DcMapping {
     map<string, int32> mapping = 1;
 }
@@ -14,9 +19,20 @@ message CassandraOptions {
     optional string user = 3;
     optional int64 replication_factor = 4;
     optional DcMapping datacenters_mapping = 5;
+    HostIp db_server = 6; // Server location, can be multiple, Also Specify Port
+}
+message PoloDbOptions {
+    string file_path = 1;
 }
 message HostIp {
     repeated string host_ip = 1;
+}
+message StorageOptions {
+    SDriver driver = 1;
+    oneof configuration_options {
+        CassandraOptions cass_options = 10;
+        PoloDbOptions polodb_options = 11;
+    }
 }
 message ControllerConfigRules {
     int64 heartbeat_freq = 1; // The Frequency of checking agents in secs
@@ -25,8 +41,10 @@ message ControllerConfigRules {
     int64 controller_port = 4; // Port for the Api
     // int64 db_port = 5; // Database Port DEPRECATED
     bool authentication = 6; // If you want authentication or not
-    HostIp db_server = 7; // Server location, can be multiple, Also Specify Port
-    CassandraOptions cassandra_options = 8; // Cassandra Options To connect
+    // HostIp db_server = 7; // Deprecated Moved this to Cassandra Options
+    // CassandraOptions cassandra_options = 8; Deprecated // Moved to storage Options 
+    StorageOptions storage_options = 9;
+    
 }
 
 message AgentConfigRules {
@@ -36,4 +54,5 @@ message AgentConfigRules {
     string controller_ip = 4; // Controller IP address or Hostnaem 
     string token = 5; // Token to connect with controller
     int64 port = 6 ; // Port to connect with the controller
+    //StorageOptions storage_options = 7;
 }
