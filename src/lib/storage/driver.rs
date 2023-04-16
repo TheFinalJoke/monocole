@@ -1,5 +1,3 @@
-use crate::storage::storage_trait::{Storage, StoreDriver};
-
-struct StorageDriver<D: StoreDriver> {
+struct StorageDriver<D> {
     driver: D,
 }

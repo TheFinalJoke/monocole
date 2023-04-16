@@ -1,21 +1,42 @@
-pub trait StoreDriver {
-    fn insert<E>() -> Result<(), E>;
+use thiserror::Error;
+use polodb_core::DbErr;
+#[derive(Error, Debug)]
+pub enum StorageError {
+    #[error("PoloDb had an error, {0}")]
+    PoloDbError(DbErr),
 
-    fn bulk_insert<E>() -> Result<(), E>;
+    #[error("PoloDb File Error {0}")]
+    PoloDbFileError(String),
 
-    fn create_table<E>() -> Result<(), E>;
+    #[error("Failed to open a connection to database")]
+    PolodbConnectionFailure,
+}
+pub type StorageResult<T> = Result<T, StorageError>;
+pub type StoreDriverResult = Result<(), StorageError>;
 
-    fn create_db<E>() -> Result<(), E>;
 
-    fn drop<E>() -> Result<(), E>;
+pub trait DbConnection<T> {
+    fn connect(&self) -> StorageResult<T>;
+}
 
-    fn del<E>() -> Result<(), E>;
+pub trait StoreDriver<T> {
+    fn insert(&self, conn: impl DbConnection<T>) -> StoreDriverResult;
 
-    fn select<T, E>() -> Result<T, E>;
+    fn bulk_insert(&self, conn: impl DbConnection<T>) -> StoreDriverResult;
+
+    fn create_table(&self, conn: impl DbConnection<T>) -> StoreDriverResult;
+
+    fn create_db(&self, conn: impl DbConnection<T>) -> StoreDriverResult;
+
+    fn drop(&self, conn: impl DbConnection<T>) -> StoreDriverResult;
+
+    fn del(&self, conn: impl DbConnection<T>) -> StoreDriverResult;
+
+    fn select(&self, conn: impl DbConnection<T>) -> StoreDriverResult;
 }
 
 pub trait Storage {
-    fn load<E>(driver: impl StoreDriver) -> Result<(), E>;
+    fn load<T, E>(driver: impl StoreDriver<T>) -> Result<(), E>;
 
     fn connect<E>(&self) -> Result<(), E>;
 }
