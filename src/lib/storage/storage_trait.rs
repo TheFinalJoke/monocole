@@ -11,6 +11,16 @@ pub enum StorageError {
     #[error("Failed to open a connection to database")]
     PolodbConnectionFailure,
 }
+
+impl StorageError {
+    pub fn try_into_polo_db_error(self) -> Result<DbErr, Self> {
+        if let Self::PoloDbError(v) = self {
+            Ok(v)
+        } else {
+            Err(self)
+        }
+    }
+}
 pub type StorageResult<T> = Result<T, StorageError>;
 pub type StoreDriverResult = Result<(), StorageError>;
 

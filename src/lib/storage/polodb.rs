@@ -5,6 +5,7 @@ use std::fs::File;
 use super::storage_trait::{self, StorageError};
 pub struct PoloDb {
     pub db_path: String,
+    pub collection: String,
 }
 
 
@@ -38,6 +39,7 @@ impl storage_trait::StoreDriver<Database> for PoloDb {
         &self,
         conn: impl storage_trait::DbConnection<Database>,
     ) -> storage_trait::StoreDriverResult {
+        // Instead of tables
         Ok(())
     }
 
